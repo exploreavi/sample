@@ -1,4 +1,4 @@
-package sample;
+package org.adiwakar.app.data;
 
 import java.util.HashMap;
 

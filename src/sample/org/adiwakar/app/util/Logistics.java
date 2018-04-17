@@ -1,17 +1,17 @@
-package sample;
+package org.adiwakar.app.util;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Logistics {
 	Object lock = new Object();
 	boolean hasData = false;
-	Logger _log = Logger.getLogger(this.getClass().getName(),null);
-	public Logistics() {
-		_log.setLevel(Level.FINER);
-	}
-	public Logger get_log() {
-		return _log;
+    private static final Logger logger = LogManager.getLogger("Logistics");
+    
+    
+	public Logger getLogger() {
+		return logger;
 	}
 	public boolean isHasData() {
 		return hasData;
