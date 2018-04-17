@@ -1,45 +1,57 @@
 package sample;
 
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Consumer implements Runnable {
 	HashMap<String, String> hm;
 	Object lock;
-	int lastKnown = -1;
+	Logistics l;
+	Logger log;
+	int lastKnown = 0;
 
-	public Consumer(HashMap<String, String> hm, Object lock) {
+	public Consumer(HashMap<String, String> hm, Logistics l) {
 		this.hm = hm;
-		this.lock = lock;
+		this.l = l;
+		this.lock = l.getLock();
+		this.log = l.get_log();
 	}
 
 	private void printData(String key) {
-		System.out.println(hm.get(key));
+		System.out.println("Key: " + key + " Value: " + hm.get(key));
 	}
 
 	@Override
 	public void run() {
 		System.out.println("Consumer Started");
 		while (true) {
-			try {
-				lock.wait();
-			} catch (InterruptedException ie) {
-				System.out.println("Lock interrupted in Consumer");
-			} catch (IllegalMonitorStateException ims) {
-				System.out.println("Lock unavailable");
-			}
-			if (lastKnown < hm.size()) {
-				for (int i = lastKnown+1; i < hm.size() - lastKnown; i++) {
-					printData("stringKey" + Integer.toString(i));
+			synchronized (lock) {
+				if (l.isHasData() == false) {
+					try {
+						log.log(Level.FINE,"Data not produced hence waiting");
+						lock.wait();
+					} catch (InterruptedException ie) {
+						System.out.println("Lock interrupted in Consumer");
+					} catch (IllegalMonitorStateException ims) {
+						System.out.println("Lock unavailable for Consumer");
+					}
 				}
-				lastKnown = hm.size();
-				try {
-					Thread.sleep(1000); // simulate work
-				} catch (InterruptedException ie) {
-					System.out.println("Producer Thread Interrupted");
+				System.out.println("Size: " + hm.size());
+				if (lastKnown < hm.size()) {
+					for (int i = lastKnown; i < hm.size(); i++) {
+						printData("stringKey" + Integer.toString(i));
+					}
+					try {
+						Thread.sleep(1000); // simulate work
+					} catch (InterruptedException ie) {
+						System.out.println("Consumer Thread Interrupted while sleeping");
+					}
+					lastKnown = hm.size();
+					l.setHasData(false);
 				}
 				lock.notifyAll();
-			} else // end if
-				lock.notifyAll();
+			} // end synchronized
 		} // end while
 	} // end method run
 }

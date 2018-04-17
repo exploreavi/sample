@@ -3,10 +3,11 @@ package sample;
 public class DemoApp {
 	public static void main(String[] args) {
 		Data d = new Data();
-		Object lock = new Object();
-		Thread producer = new Thread(new Producer(d.getHm(), lock));
+		Logistics l = new Logistics();
+		
+		Thread producer = new Thread(new Producer(d.getHm(), l));
 		producer.start();
-		Thread consumer = new Thread(new Consumer(d.getHm(),lock));
+		Thread consumer = new Thread(new Consumer(d.getHm(),l));
 		consumer.start();
 		
 		try {
